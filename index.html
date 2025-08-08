@@ -17,165 +17,51 @@
         <span class="pill">Mobile-first</span>
       </header>
 
-      <div class="hint">Enter <b>any 3</b> values (Bottom Elev, Top Elev, Distance, Slope%) and I’ll solve the 4th. Tap
-        the keypad to enter numbers.</div>
+      <div class="hint">
+        Enter <b>any 3</b> values (Bottom Elev, Top Elev, Distance, Slope %) and I’ll solve the 4th.
+      </div>
 
-      <!-- Solver fields -->
       <div class="solver">
         <div class="grid">
           <label class="fld">Bottom Elev
-            <input id="eb" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 692.500">
+            <input id="eb" type="text" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off"
+              spellcheck="false" placeholder="e.g. 692.500" pattern="^-?\\d*\\.?\\d*$">
           </label>
           <label class="fld">Top Elev
-            <input id="et" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 695.125">
+            <input id="et" type="text" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off"
+              spellcheck="false" placeholder="e.g. 695.125" pattern="^-?\\d*\\.?\\d*$">
           </label>
           <label class="fld">Distance
-            <input id="d" type="text" inputmode="decimal" autocomplete="off" placeholder="meters">
+            <input id="d" type="text" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off"
+              spellcheck="false" placeholder="meters" pattern="^-?\\d*\\.?\\d*$">
           </label>
           <label class="fld">Slope (%)
-            <input id="s" type="text" inputmode="decimal" autocomplete="off" placeholder="rise/run × 100">
+            <input id="s" type="text" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off"
+              spellcheck="false" placeholder="rise/run × 100" pattern="^-?\\d*\\.?\\d*$">
           </label>
         </div>
+
+        <div class="actions">
+          <button id="btn-clear" type="button">Clear all</button>
+        </div>
+
         <div class="solve-row">
           <span id="solveMsg">Enter any 3 values; I’ll solve the 4th.</span>
-        </div>
-      </div>
-
-      <!-- Keypad (minimal) -->
-      <div class="stack">
-
-        <div class="numpad" aria-label="Keypad">
-          <!-- Row 1 -->
-          <button class="key" data-key="7">7</button>
-          <button class="key" data-key="8">8</button>
-          <button class="key" data-key="9">9</button>
-          <button class="key tall enter" data-key="Enter">Enter</button>
-
-          <!-- Row 2 -->
-          <button class="key" data-key="4">4</button>
-          <button class="key" data-key="5">5</button>
-          <button class="key" data-key="6">6</button>
-          <!-- Enter continues (tall) -->
-
-          <!-- Row 3 -->
-          <button class="key" data-key="1">1</button>
-          <button class="key" data-key="2">2</button>
-          <button class="key" data-key="3">3</button>
-          <button class="key ce" data-key="CE">CE</button>
-
-          <!-- Row 4 -->
-          <button class="key wide" data-key="0">0</button>
-          <button class="key" data-key=".">.</button>
-          <button class="key" data-key="BACK">⌫</button>
         </div>
       </div>
     </div>
   </div>
 
-  <script>
-    // ===== Utilities =====
-    const $ = (sel) => document.querySelector(sel);
-    const eb = $('#eb'), et = $('#et'), d = $('#d'), s = $('#s');
-    const solveMsg = $('#solveMsg');
-
-    // On touch devices, use only the virtual keypad
-    if ('ontouchstart' in window) {
-      [eb, et, d, s].forEach(inp => inp.setAttribute('readonly', 'readonly'));
-    }
-
-    // Active input target for keypad
-    let activeTarget = eb;
-    document.addEventListener('click', (e) => {
-      if (e.target.tagName === 'INPUT') activeTarget = e.target;
-    });
-
-    // Sanitize and autosolve when typing (desktop)
-    [eb, et, d, s].forEach(inp => {
-      inp.addEventListener('input', () => {
-        inp.value = inp.value.replace(/[^0-9.\-]/g, '');
-        solve();
-      });
-      inp.addEventListener('focus', () => activeTarget = inp);
-    });
-
-    function num(v) {
-      if (v == null || v.trim() === '') return null;
-      const n = Number(v);
-      return Number.isFinite(n) ? n : null;
-    }
-    function setRounded(inp, val) {
-      const r = Math.round((val + Number.EPSILON) * 1000) / 1000; // 3 dp
-      inp.value = (Object.is(r, -0) ? 0 : r).toString();
-    }
-
-    function solve() {
-      const Eb = num(eb.value), Et = num(et.value), D = num(d.value), S = num(s.value); // S in %
-      const count = [Eb != null, Et != null, D != null, S != null].filter(Boolean).length;
-
-      if (count < 3) { solveMsg.textContent = 'Enter any 3 values; I’ll solve the 4th.'; return; }
-
-      // Solve the missing one
-      if (Eb == null && Et != null && D != null && S != null) {
-        setRounded(eb, Et - D * (S / 100));
-        solveMsg.textContent = 'Solved bottom elevation.'; return;
-      }
-      if (Et == null && Eb != null && D != null && S != null) {
-        setRounded(et, Eb + D * (S / 100));
-        solveMsg.textContent = 'Solved top elevation.'; return;
-      }
-      if (D == null && Eb != null && Et != null && S != null) {
-        if (S === 0) { solveMsg.textContent = 'Distance undefined when slope is 0% and elevations differ.'; return; }
-        setRounded(d, (Et - Eb) / (S / 100));
-        solveMsg.textContent = 'Solved distance.'; return;
-      }
-      if (S == null && Eb != null && Et != null && D != null) {
-        if (D === 0) { solveMsg.textContent = 'Slope undefined when distance is 0.'; return; }
-        setRounded(s, ((Et - Eb) / D) * 100);
-        solveMsg.textContent = 'Solved slope (%).'; return;
-      }
-
-      // If all 4 present, keep S consistent with Eb,Et,D
-      if (Eb != null && Et != null && D != null && D !== 0) {
-        setRounded(s, ((Et - Eb) / D) * 100);
-        solveMsg.textContent = 'Recomputed slope (%).';
-      }
-    }
-
-    // Keypad wiring
-    document.querySelectorAll('.numpad .key').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const k = btn.dataset.key;
-        const target = (document.activeElement?.tagName === 'INPUT') ? document.activeElement : activeTarget;
-
-        if (k === 'Enter') { solve(); return; }
-        if (k === 'CE') {
-          target.value = '';
-          target.dispatchEvent(new Event('input'));
-          target.focus();
-          return;
-        }
-        if (k === 'BACK') {
-          const sPos = target.selectionStart ?? target.value.length;
-          const ePos = target.selectionEnd ?? target.value.length;
-          if (sPos === ePos && sPos > 0) {
-            target.value = target.value.slice(0, sPos - 1) + target.value.slice(ePos);
-            target.setSelectionRange(sPos - 1, sPos - 1);
-          } else {
-            target.value = target.value.slice(0, sPos) + target.value.slice(ePos);
-            target.setSelectionRange(sPos, sPos);
-          }
-          target.dispatchEvent(new Event('input'));
-          return;
-        }
-        // insert key
-        const sPos = target.selectionStart ?? target.value.length;
-        const ePos = target.selectionEnd ?? target.value.length;
-        target.setRangeText(k, sPos, ePos, 'end');
-        target.dispatchEvent(new Event('input'));
-        target.focus();
-      });
-    });
-  </script>
+  <script>const $=(sel)=>document.querySelector(sel);const eb=$('#eb'),et=$('#et'),d=$('#d'),s=$('#s');const solveMsg=$('#solveMsg');[eb,et,d,s].forEach(inp=>{inp.addEventListener('input',()=>{const cleaned=inp.value.replace(/[^0-9.\-]/g,'');if(cleaned!==inp.value)inp.value=cleaned;solve()});inp.addEventListener('keydown',(e)=>{if(e.key==='Enter'){e.preventDefault();solve()}})});$('#btn-clear').addEventListener('click',()=>{[eb,et,d,s].forEach(i=>i.value='');solve();eb.focus()});function num(v){if(v==null||v.trim()==='')return null;const n=Number(v);return Number.isFinite(n)?n:null}
+  function setRounded(inp,val){const r=Math.round((val+Number.EPSILON)*1000)/1000;inp.value=(Object.is(r,-0)?0:r).toString()}
+  function solve(){const Eb=num(eb.value),Et=num(et.value),D=num(d.value),S=num(s.value);const present=[Eb!=null,Et!=null,D!=null,S!=null].filter(Boolean).length;if(present<3){solveMsg.textContent='Enter any 3 values; I’ll solve the 4th.';return}
+  if(Eb==null&&Et!=null&&D!=null&&S!=null){setRounded(eb,Et-D*(S/100));solveMsg.textContent='Solved bottom elevation.';return}
+  if(Et==null&&Eb!=null&&D!=null&&S!=null){setRounded(et,Eb+D*(S/100));solveMsg.textContent='Solved top elevation.';return}
+  if(D==null&&Eb!=null&&Et!=null&&S!=null){if(S===0){solveMsg.textContent='Distance undefined when slope is 0% and elevations differ.';return}
+  setRounded(d,(Et-Eb)/(S/100));solveMsg.textContent='Solved distance.';return}
+  if(S==null&&Eb!=null&&Et!=null&&D!=null){if(D===0){solveMsg.textContent='Slope undefined when distance is 0.';return}
+  setRounded(s,((Et-Eb)/D)*100);solveMsg.textContent='Solved slope (%).';return}
+  if(Eb!=null&&Et!=null&&D!=null&&D!==0){setRounded(s,((Et-Eb)/D)*100);solveMsg.textContent='Recomputed slope (%).'}}</script>
 </body>
 
 </html>
