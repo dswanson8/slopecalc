@@ -163,6 +163,11 @@ header .pill {
   box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .25);
 }
 
+.numpad .ce {
+  grid-column: 4;
+  grid-row: 3;
+}
+
 .numpad .key:hover {
   background: var(--key-hover)
 }

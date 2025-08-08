@@ -61,6 +61,7 @@
           <button class="key" data-key="1">1</button>
           <button class="key" data-key="2">2</button>
           <button class="key" data-key="3">3</button>
+          <button class="key ce" data-key="CE">CE</button>
 
           <!-- Row 4 -->
           <button class="key wide" data-key="0">0</button>
@@ -147,6 +148,12 @@
         const target = (document.activeElement?.tagName === 'INPUT') ? document.activeElement : activeTarget;
 
         if (k === 'Enter') { solve(); return; }
+        if (k === 'CE') {
+          target.value = '';
+          target.dispatchEvent(new Event('input'));
+          target.focus();
+          return;
+        }
         if (k === 'BACK') {
           const sPos = target.selectionStart ?? target.value.length;
           const ePos = target.selectionEnd ?? target.value.length;
