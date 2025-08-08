@@ -1,0 +1,80 @@
+/* ===== THEME ===== */
+:root{
+  --bg:#0b1220; --card:#111827; --ink:#e5e7eb; --muted:#9ca3af; --accent:#38bdf8;
+  --key-bg:#1f2937; --key-text:#e5e7eb; --key-border:#111827; --key-hover:#2b374a;
+}
+
+/* ===== LAYOUT BASICS ===== */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--ink);
+  display:grid; place-items:center;
+  overscroll-behavior-y:none; /* prevents browser pull-to-refresh */
+}
+.app{width:min(720px,100%); padding:16px; height:100dvh; min-height:100dvh;}
+.card{
+  background:var(--card); border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.3);
+  overflow:hidden; height:100%;
+  display:grid; grid-template-rows:auto auto auto 1fr; /* header, hint, solver, keypad stack */
+  min-height:0;
+}
+
+/* ===== HEADER / HINT ===== */
+header{padding:16px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,.06)}
+header h1{margin:0; font-size:18px; font-weight:600; letter-spacing:.3px}
+header .pill{font-size:12px; color:var(--muted)}
+.hint{color:var(--muted); font-size:12px; padding:8px 20px}
+
+/* ===== SOLVER FIELDS ===== */
+.solver{padding:6px 20px 0; min-height:0}
+.solver .grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:10px 12px;
+}
+.fld{display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--muted)}
+.fld input{
+  background:#0f172a; border:1px solid rgba(255,255,255,.12);
+  color:var(--ink); padding:10px 12px; border-radius:10px; font-size:18px;
+  letter-spacing:1.2px; outline:none;
+}
+.fld input::placeholder{color:#64748b}
+.fld input:focus{border-color:rgba(56,189,248,.6); box-shadow:0 0 0 2px rgba(56,189,248,.15) inset}
+.solve-row{padding:4px 0 0; font-size:12px; color:var(--muted)}
+
+/* Stack: small spacer + keypad (so keypad dominates vertically) */
+.stack{
+  display:grid; grid-template-rows: 1fr 2fr; gap:10px;
+  padding:10px 20px 14px; min-height:0;
+}
+.spacer{min-height:0}
+
+/* ===== KEYPAD ===== */
+.numpad{
+  height:100%; min-height:240px;
+  display:grid; grid-template-columns:repeat(4,1fr);
+  grid-auto-rows:56px; gap:6px; min-height:0;
+}
+.numpad .key{
+  background:var(--key-bg); color:var(--key-text);
+  border:1px solid var(--key-border); border-radius:6px;
+  font-size:18px; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; user-select:none; box-shadow:inset 0 -2px 0 rgba(0,0,0,.25);
+}
+.numpad .key:hover{background:var(--key-hover)}
+.numpad .key:active{transform:translateY(1px)}
+.numpad .key.tall{grid-row:span 2}
+.numpad .key.wide{grid-column:span 2}
+.numpad .enter{grid-column:4; grid-row:1 / span 2}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 420px){
+  .solver .grid{ grid-template-columns:1fr; }
+}
+@media (min-width:560px){
+  .numpad .key{font-size:20px}
+}
+@media (max-height:640px){
+  .numpad{grid-auto-rows:48px}
+  .numpad .key{font-size:16px}
+}
